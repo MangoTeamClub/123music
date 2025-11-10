@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>白噪音播放器 | 极简科技风</title>
+    <style>
+        /* 基础样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+
+        :root {
+            --primary-color: #00d4ff;
+            --secondary-color: #5e17eb;
+            --bg-dark: #0a0a0f;
+            --bg-card: #141420;
+            --text-light: #e0e0e0;
+            --text-dim: #8a8a9c;
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(94, 23, 235, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 212, 255, 0.1) 0%, transparent 20%);
+        }
+
+        /* 布局 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .header-content {
+            position: relative;
+            display: inline-block;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            position: relative;
+        }
+
+        .subtitle {
+            color: var(--text-dim);
+            font-size: 1rem;
+            letter-spacing: 1px;
+        }
+
+        /* 音频网格 */
+        .audio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .audio-card {
+            background-color: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .audio-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            border-color: rgba(0, 212, 255, 0.2);
+        }
+
+        .audio-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .audio-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .audio-title {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        /* 控制按钮 */
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .play-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .play-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 212, 255, 0.4);
+        }
+
+        .play-btn.playing {
+            background: linear-gradient(135deg, #ff3366, #ff3366);
+        }
+
+        .progress-container {
+            flex-grow: 1;
+            height: 4px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-radius: 2px;
+            transition: width 0.1s linear;
+        }
+
+        .time-display {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            min-width: 80px;
+            text-align: right;
+        }
+
+        /* 音量控制 */
+        .volume-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .volume-slider {
+            flex-grow: 1;
+            -webkit-appearance: none;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+        }
+
+        /* 当前播放指示器 */
+        .now-playing {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--bg-card);
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            z-index: 100;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            max-width: 90%;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .now-playing.visible {
+            opacity: 1;
+        }
+
+        .now-playing-title {
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .audio-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .now-playing {
+                padding: 0.8rem 1.5rem;
+            }
+        }
+
+        /* 动画效果 */
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(0, 212, 255, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(0, 212, 255, 0);
+            }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* 加载动画 */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 全局控制 */
+        .global-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .global-btn {
+            background-color: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+            padding: 0.5rem 1.5rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+
+        .global-btn:hover {
+            background-color: rgba(0, 212, 255, 0.1);
+            border-color: rgba(0, 212, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <h1>白噪音播放器</h1>
+                <div class="subtitle">沉浸式音频体验 | 极简科技风设计</div>
+            </div>
+        </header>
+
+        <div class="global-controls">
+            <button class="global-btn" id="play-all">播放全部</button>
+            <button class="global-btn" id="stop-all">停止全部</button>
+            <button class="global-btn" id="random-play">随机播放</button>
+        </div>
+
+        <div class="audio-grid" id="audio-grid">
+            <!-- 音频卡片将通过JavaScript动态生成 -->
+        </div>
+    </div>
+
+    <div class="now-playing" id="now-playing">
+        <span class="now-playing-title" id="now-playing-title"></span>
+        <div class="audio-controls">
+            <button class="play-btn" id="now-playing-btn">
+                <svg width="12" height="14" viewBox="0 0 12 14" fill="none">
+                    <path d="M0 0V14L12 7L0 0Z" fill="currentColor"/>
+                </svg>
+            </button>
+            <div class="progress-container">
+                <div class="progress-bar" id="now-playing-progress"></div>
+            </div>
+            <div class="time-display" id="now-playing-time">0:00 / 0:00</div>
+        </div>
+    </div>
+
+    <script>
+        // 音频数据 - 根据Excel表格提供的信息
+        const audioData = [
+            { id: 1, title: "color-X", filename: "music01" },
+            { id: 2, title: "trip", filename: "music02" },
+            { id: 3, title: "我和你", filename: "music03" },
+            { id: 4, title: "雨天1", filename: "music04" },
+            { id: 5, title: "雨天2", filename: "music05" },
+            { id: 6, title: "雨天3", filename: "music06" },
+            { id: 7, title: "雨天4", filename: "music07" },
+            { id: 8, title: "雨天5", filename: "music08" },
+            { id: 9, title: "篝火1", filename: "music09" },
+            { id: 10, title: "篝火2", filename: "music10" },
+            { id: 11, title: "篝火3", filename: "music11" },
+            { id: 12, title: "篝火4", filename: "music12" },
+            { id: 13, title: "篝火5", filename: "music13" },
+            { id: 14, title: "Minecraft-c418", filename: "music14" },
+            { id: 15, title: "happy peple", filename: "music15" },
+            { id: 16, title: "Intro", filename: "music16" },
+            { id: 17, title: "wake", filename: "music17" },
+            { id: 18, title: "山海皆可平", filename: "music18" },
+            { id: 19, title: "my happy song", filename: "music19" },
+            { id: 20, title: "seeyou aging", filename: "music20" }
+        ];
+
+        // 音频文件路径 - 同一文件夹内，使用相对路径
+        const basePath = "./";
+
+        // 全局变量
+        let currentAudio = null;
+        let currentCard = null;
+        let audioElements = [];
+
+        // 初始化音频播放器
+        function initAudioPlayer() {
+            const audioGrid = document.getElementById('audio-grid');
+            
+            audioData.forEach((audio, index) => {
+                // 创建音频元素
+                const audioElement = new Audio();
+                audioElement.src = `${basePath}${audio.filename}.mp3`;
+                audioElement.preload = "metadata";
+                
+                // 创建音频卡片
+                const card = document.createElement('div');
+                card.className = 'audio-card';
+                card.innerHTML = `
+                    <div class="audio-title">${audio.title}</div>
+                    <div class="audio-controls">
+                        <button class="play-btn" data-id="${audio.id}">
+                            <svg width="12" height="14" viewBox="0 0 12 14" fill="none">
+                                <path d="M0 0V14L12 7L0 0Z" fill="currentColor"/>
+                            </svg>
+                        </button>
+                        <div class="progress-container">
+                            <div class="progress-bar" id="progress-${audio.id}"></div>
+                        </div>
+                        <div class="time-display" id="time-${audio.id}">0:00 / 0:00</div>
+                    </div>
+                    <div class="volume-container">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M6.5 2.5L3 5.5H0V9.5H3L6.5 12.5V2.5ZM9.5 3.5V11.5C11 10 11 7.5 9.5 5.5Z"/>
+                            <path d="M11 2C13.5 4 13.5 9 11 12L10 11C12 8.5 12 5.5 10 3L11 2Z"/>
+                        </svg>
+                        <input type="range" min="0" max="100" value="50" class="volume-slider" data-id="${audio.id}">
+                    </div>
+                `;
+                
+                audioGrid.appendChild(card);
+                
+                // 存储音频元素
+                audioElements.push({
+                    element: audioElement,
+                    id: audio.id,
+                    title: audio.title,
+                    card: card
+                });
+                
+                // 添加事件监听器
+                const playBtn = card.querySelector('.play-btn');
+                const volumeSlider = card.querySelector('.volume-slider');
+                
+                playBtn.addEventListener('click', () => togglePlay(audioElement, audio.id, audio.title, card));
+                
+                volumeSlider.addEventListener('input', () => {
+                    audioElement.volume = volumeSlider.value / 100;
+                });
+                
+                // 更新进度条
+                audioElement.addEventListener('timeupdate', () => updateProgress(audioElement, audio.id));
+                
+                // 音频加载完成时更新总时长
+                audioElement.addEventListener('loadedmetadata', () => {
+                    updateTimeDisplay(audio.id, 0, audioElement.duration);
+                });
+                
+                // 音频结束时重置
+                audioElement.addEventListener('ended', () => {
+                    playBtn.classList.remove('playing');
+                    playBtn.innerHTML = `<svg width="12" height="14" viewBox="0 0 12 14" fill="none">
+                        <path d="M0 0V14L12 7L0 0Z" fill="currentColor"/>
+                    </svg>`;
+                    updateProgress(audioElement, audio.id, true);
+                });
+            });
+            
+            // 全局控制按钮
+            document.getElementById('play-all').addEventListener('click', playAll);
+            document.getElementById('stop-all').addEventListener('click', stopAll);
+            document.getElementById('random-play').addEventListener('click', randomPlay);
+            
+            // 当前播放控制
+            document.getElementById('now-playing-btn').addEventListener('click', toggleNowPlaying);
+        }
+
+        // 切换播放/暂停
+        function togglePlay(audioElement, id, title, card) {
+            const playBtn = card.querySelector('.play-btn');
+            
+            if (currentAudio && currentAudio !== audioElement) {
+                // 停止当前播放的音频
+                currentAudio.pause();
+                if (currentCard) {
+                    const currentPlayBtn = currentCard.querySelector('.play-btn');
+                    currentPlayBtn.classList.remove('playing');
+                    currentPlayBtn.innerHTML = `<svg width="12" height="14" viewBox="0 0 12 14" fill="none">
+                        <path d="M0 0V14L12 7L0 0Z" fill="currentColor"/>
+                    </svg>`;
+                }
+            }
+            
+            if (audioElement.paused) {
+                audioElement.play();
+                playBtn.classList.add('playing');
+                playBtn.innerHTML = `<svg width="10" height="12" viewBox="0 0 10 12" fill="none">
+                    <rect width="3" height="12" fill="currentColor"/>
+                    <rect x="7" width="3" height="12" fill="currentColor"/>
+                </svg>`;
+                
+                currentAudio = audioElement;
+                currentCard = card;
+                
+                // 更新当前播放显示
+                document.getElementById('now-playing-title').textContent = title;
+                document.getElementById('now-playing').classList.add('visible');
+            } else {
+                audioElement.pause();
+                playBtn.classList.remove('playing');
+                playBtn.innerHTML = `<svg width="12" height="14" viewBox="0 0 12 14" fill="none">
+                    <path d="M0 0V14L12 7L0 0Z" fill="currentColor"/>
+                </svg>`;
+                
+                if (currentAudio === audioElement) {
+                    currentAudio = null;
+                    currentCard = null;
+                    document.getElementById('now-playing').classList.remove('visible');
+                }
+            }
+        }
+
+        // 更新进度条
+        function updateProgress(audioElement, id, reset = false) {
+            const progressBar = document.getElementById(`progress-${id}`);
+            const timeDisplay = document.getElementById(`time-${id}`);
+            
+            if (reset) {
+                progressBar.style.width = '0%';
+                updateTimeDisplay(id, 0, audioElement.duration);
+                return;
+            }
+            
+            const currentTime = audioElement.currentTime;
+            const duration = audioElement.duration;
+            const progressPercent = (currentTime / duration) * 100;
+            
+            progressBar.style.width = `${progressPercent}%`;
+            updateTimeDisplay(id, currentTime, duration);
+            
+            // 更新当前播放的进度
+            if (currentAudio === audioElement) {
+                const nowPlayingProgress = document.getElementById('now-playing-progress');
+                const nowPlayingTime = document.getElementById('now-playing-time');
+                
+                nowPlayingProgress.style.width = `${progressPercent}%`;
+                nowPlayingTime.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+            }
+        }
+
+        // 更新时间显示
+        function updateTimeDisplay(id, currentTime, duration) {
+            const timeDisplay = document.getElementById(`time-${id}`);
+            timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+        }
+
+        // 格式化时间
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return "0:00";
+            
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        // 播放全部
+        function playAll() {
+            audioElements.forEach(item => {
+                if (item.element.paused) {
+                    item.element.play();
+                    const playBtn = item.card.querySelector('.play-btn');
+                    playBtn.classList.add('playing');
+                    playBtn.innerHTML = `<svg width="10" height="12" viewBox="0 0 10 12" fill="none">
+                        <rect width="3" height="12" fill="currentColor"/>
+                        <rect x="7" width="3" height="12" fill="currentColor"/>
+                    </svg>`;
+                }
+            });
+        }
+
+        // 停止全部
+        function stopAll() {
+            audioElements.forEach(item => {
+                item.element.pause();
+                item.element.currentTime = 0;
+                const playBtn = item.card.querySelector('.play-btn');
+                playBtn.classList.remove('playing');
+                playBtn.innerHTML = `<svg width="12" height="14" viewBox="0 0 12 14" fill="none">
+                    <path d="M0 0V14L12 7L0 0Z" fill="currentColor"/>
+                </svg>`;
+                updateProgress(item.element, item.id, true);
+            });
+            
+            currentAudio = null;
+            currentCard = null;
+            document.getElementById('now-playing').classList.remove('visible');
+        }
+
+        // 随机播放
+        function randomPlay() {
+            const randomIndex = Math.floor(Math.random() * audioElements.length);
+            const randomAudio = audioElements[randomIndex];
+            
+            if (currentAudio) {
+                currentAudio.pause();
+                if (currentCard) {
+                    const currentPlayBtn = currentCard.querySelector('.play-btn');
+                    currentPlayBtn.classList.remove('playing');
+                    currentPlayBtn.innerHTML = `<svg width="12" height="14" viewBox="0 0 12 14" fill="none">
+                        <path d="M0 0V14L12 7L0 0Z" fill="currentColor"/>
+                    </svg>`;
+                }
+            }
+            
+            randomAudio.element.play();
+            const playBtn = randomAudio.card.querySelector('.play-btn');
+            playBtn.classList.add('playing');
+            playBtn.innerHTML = `<svg width="10" height="12" viewBox="0 0 10 12" fill="none">
+                <rect width="3" height="12" fill="currentColor"/>
+                <rect x="7" width="3" height="12" fill="currentColor"/>
+            </svg>`;
+            
+            currentAudio = randomAudio.element;
+            currentCard = randomAudio.card;
+            
+            // 更新当前播放显示
+            document.getElementById('now-playing-title').textContent = randomAudio.title;
+            document.getElementById('now-playing').classList.add('visible');
+        }
+
+        // 切换当前播放
+        function toggleNowPlaying() {
+            if (!currentAudio) return;
+            
+            const nowPlayingBtn = document.getElementById('now-playing-btn');
+            
+            if (currentAudio.paused) {
+                currentAudio.play();
+                nowPlayingBtn.classList.add('playing');
+                nowPlayingBtn.innerHTML = `<svg width="10" height="12" viewBox="0 0 10 12" fill="none">
+                    <rect width="3" height="12" fill="currentColor"/>
+                    <rect x="7" width="3" height="12" fill="currentColor"/>
+                </svg>`;
+                
+                if (currentCard) {
+                    const playBtn = currentCard.querySelector('.play-btn');
+                    playBtn.classList.add('playing');
+                    playBtn.innerHTML = `<svg width="10" height="12" viewBox="0 0 10 12" fill="none">
+                        <rect width="3" height="12" fill="currentColor"/>
+                        <rect x="7" width="3" height="12" fill="currentColor"/>
+                    </svg>`;
+                }
+            } else {
+                currentAudio.pause();
+                nowPlayingBtn.classList.remove('playing');
+                nowPlayingBtn.innerHTML = `<svg width="12" height="14" viewBox="0 0 12 14" fill="none">
+                    <path d="M0 0V14L12 7L0 0Z" fill="currentColor"/>
+                </svg>`;
+                
+                if (currentCard) {
+                    const playBtn = currentCard.querySelector('.play-btn');
+                    playBtn.classList.remove('playing');
+                    playBtn.innerHTML = `<svg width="12" height="14" viewBox="0 0 12 14" fill="none">
+                        <path d="M0 0V14L12 7L0 0Z" fill="currentColor"/>
+                    </svg>`;
+                }
+            }
+        }
+
+        // 初始化播放器
+        document.addEventListener('DOMContentLoaded', initAudioPlayer);
+    </script>
+</body>
+</html>
