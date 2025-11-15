@@ -38,6 +38,7 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 2rem;
+            min-height: calc(100vh - 120px);
         }
 
         header {
@@ -288,6 +289,7 @@
             justify-content: center;
             gap: 1rem;
             margin-bottom: 2rem;
+            flex-wrap: wrap;
         }
 
         .global-btn {
@@ -305,6 +307,51 @@
             background-color: rgba(0, 212, 255, 0.1);
             border-color: rgba(0, 212, 255, 0.3);
         }
+
+        .global-btn.active {
+            background-color: rgba(0, 212, 255, 0.2);
+            border-color: rgba(0, 212, 255, 0.5);
+        }
+
+        /* 页脚样式 */
+        .footer {
+            text-align: center;
+            padding: 1.5rem;
+            background-color: rgba(10, 10, 15, 0.8);
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer a:hover {
+            color: var(--secondary-color);
+            text-decoration: underline;
+        }
+
+        /* 循环指示器 */
+        .loop-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .loop-indicator.active {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -320,6 +367,7 @@
             <button class="global-btn" id="play-all">播放全部</button>
             <button class="global-btn" id="stop-all">停止全部</button>
             <button class="global-btn" id="random-play">随机播放</button>
+            <button class="global-btn" id="loop-toggle">循环播放</button>
         </div>
 
         <div class="audio-grid" id="audio-grid">
@@ -340,6 +388,16 @@
             </div>
             <div class="time-display" id="now-playing-time">0:00 / 0:00</div>
         </div>
+        <div class="loop-indicator" id="now-playing-loop">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M5.5 5H10.5L9 3.5L10.5 2L13.5 5L10.5 8L9 6.5L10.5 5H5.5C4.4 5 3.5 5.9 3.5 7V9H2V7C2 5.3 3.3 4 5 4H5.5V5ZM10.5 11H5.5L7 12.5L5.5 14L2.5 11L5.5 8L7 9.5L5.5 11H10.5C11.6 11 12.5 10.1 12.5 9V7H14V9C14 10.7 12.7 12 11 12H10.5V11Z"/>
+            </svg>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>©2022-2025 MangoClub - 本网站仅供学习使用，非其他用途</p>
+        <p><a href="https://mangoclub.vvvv.ee" target="_blank">Mango音乐</a></p>
     </div>
 
     <script>
@@ -374,6 +432,7 @@
         let currentAudio = null;
         let currentCard = null;
         let audioElements = [];
+        let isLoopEnabled = false;
 
         // 初始化音频播放器
         function initAudioPlayer() {
@@ -440,11 +499,17 @@
                 
                 // 音频结束时重置
                 audioElement.addEventListener('ended', () => {
-                    playBtn.classList.remove('playing');
-                    playBtn.innerHTML = `<svg width="12" height="14" viewBox="0 0 12 14" fill="none">
-                        <path d="M0 0V14L12 7L0 0Z" fill="currentColor"/>
-                    </svg>`;
-                    updateProgress(audioElement, audio.id, true);
+                    if (!isLoopEnabled) {
+                        playBtn.classList.remove('playing');
+                        playBtn.innerHTML = `<svg width="12" height="14" viewBox="0 0 12 14" fill="none">
+                            <path d="M0 0V14L12 7L0 0Z" fill="currentColor"/>
+                        </svg>`;
+                        updateProgress(audioElement, audio.id, true);
+                    } else {
+                        // 循环播放：重置进度并重新播放
+                        audioElement.currentTime = 0;
+                        audioElement.play();
+                    }
                 });
             });
             
@@ -452,6 +517,7 @@
             document.getElementById('play-all').addEventListener('click', playAll);
             document.getElementById('stop-all').addEventListener('click', stopAll);
             document.getElementById('random-play').addEventListener('click', randomPlay);
+            document.getElementById('loop-toggle').addEventListener('click', toggleLoop);
             
             // 当前播放控制
             document.getElementById('now-playing-btn').addEventListener('click', toggleNowPlaying);
@@ -487,6 +553,9 @@
                 // 更新当前播放显示
                 document.getElementById('now-playing-title').textContent = title;
                 document.getElementById('now-playing').classList.add('visible');
+                
+                // 更新循环指示器
+                updateLoopIndicator();
             } else {
                 audioElement.pause();
                 playBtn.classList.remove('playing');
@@ -608,6 +677,41 @@
             // 更新当前播放显示
             document.getElementById('now-playing-title').textContent = randomAudio.title;
             document.getElementById('now-playing').classList.add('visible');
+            
+            // 更新循环指示器
+            updateLoopIndicator();
+        }
+
+        // 切换循环播放
+        function toggleLoop() {
+            isLoopEnabled = !isLoopEnabled;
+            const loopBtn = document.getElementById('loop-toggle');
+            
+            if (isLoopEnabled) {
+                loopBtn.classList.add('active');
+                loopBtn.textContent = '循环播放中';
+            } else {
+                loopBtn.classList.remove('active');
+                loopBtn.textContent = '循环播放';
+            }
+            
+            // 更新当前音频的循环设置
+            if (currentAudio) {
+                currentAudio.loop = isLoopEnabled;
+            }
+            
+            // 更新循环指示器
+            updateLoopIndicator();
+        }
+
+        // 更新循环指示器
+        function updateLoopIndicator() {
+            const loopIndicator = document.getElementById('now-playing-loop');
+            if (isLoopEnabled && currentAudio) {
+                loopIndicator.classList.add('active');
+            } else {
+                loopIndicator.classList.remove('active');
+            }
         }
 
         // 切换当前播放
