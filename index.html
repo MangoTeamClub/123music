@@ -756,5 +756,35 @@
         // 初始化播放器
         document.addEventListener('DOMContentLoaded', initAudioPlayer);
     </script>
+    
+    <div class="announcement">
+        <div class="announcement-header">
+            <span class="announcement-title">公告</span>
+            <button class="close-btn">✖</button>
+        </div>
+        <div class="announcement-content">
+            <iframe src="https://mango-gonggao.mysxl.cn/" frameborder="0"></iframe>
+        </div>
+    </div>
+
+    <script>
+        // 关闭公告功能
+        document.querySelector('.close-btn').addEventListener('click', function() {
+            document.querySelector('.announcement').style.display = 'none';
+        });
+        
+        // 添加卡片悬停效果增强
+        const cards = document.querySelectorAll('.project-card');
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.background = 'rgba(40, 43, 60, 0.8)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.background = 'rgba(30, 33, 50, 0.7)';
+            });
+        });
+    </script>
 </body>
 </html>
+
