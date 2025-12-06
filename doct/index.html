@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>123music - 使用文档与免责声明</title>
+    <style>
+        /* 基础样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+
+        :root {
+            --primary-color: #00d4ff;
+            --secondary-color: #5e17eb;
+            --bg-dark: #0a0a0f;
+            --bg-card: #141420;
+            --text-light: #e0e0e0;
+            --text-dim: #8a8a9c;
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(94, 23, 235, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 212, 255, 0.1) 0%, transparent 20%);
+            line-height: 1.6;
+        }
+
+        /* 布局 */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-dim);
+            font-size: 1rem;
+            letter-spacing: 1px;
+        }
+
+        /* 主要内容区域 */
+        .content {
+            flex: 1;
+            background-color: var(--bg-card);
+            border-radius: 12px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .section {
+            margin-bottom: 2.5rem;
+        }
+
+        .section:last-child {
+            margin-bottom: 0;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        h3 {
+            color: var(--text-light);
+            font-size: 1.2rem;
+            margin: 1.5rem 0 0.8rem 0;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: var(--text-light);
+        }
+
+        ul, ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-light);
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        .highlight {
+            background-color: rgba(0, 212, 255, 0.1);
+            border-left: 3px solid var(--primary-color);
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .warning {
+            background-color: rgba(255, 87, 87, 0.1);
+            border-left: 3px solid #ff5757;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        /* 按钮样式 */
+        .action-button {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .action-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.4);
+        }
+
+        .action-button:active {
+            transform: translateY(-1px);
+        }
+
+        /* 页脚样式 */
+        .footer {
+            text-align: center;
+            padding: 1.5rem;
+            background-color: rgba(10, 10, 15, 0.8);
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer a:hover {
+            color: var(--secondary-color);
+            text-decoration: underline;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 1.5rem;
+            }
+            
+            .section {
+                margin-bottom: 2rem;
+            }
+        }
+
+        /* 返回按钮 */
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 1.5rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .back-btn:hover {
+            color: var(--secondary-color);
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="http://123music.vvvv.ee" class="back-btn">← 返回播放器</a>
+        
+        <header>
+            <h1>123music - 白噪音播放器</h1>
+            <div class="subtitle">使用文档与免责声明</div>
+        </header>
+        
+        <div class="content">
+            <div class="section">
+                <h2>产品介绍</h2>
+                <p>123Music - 白噪音播放器是一款专为学习、工作和休息设计的沉浸式音频播放工具。它提供多种高质量的环境音效，帮助用户集中注意力、放松心情或改善睡眠质量。</p>
+                
+                <div class="highlight">
+                    <h3>主要特性</h3>
+                    <ul>
+                        <li><strong>多种环境音效：</strong>包含雨声、篝火声、自然音效等多种白噪音类型</li>
+                        <li><strong>极简科技风设计：</strong>现代化界面，提供沉浸式用户体验</li>
+                        <li><strong>智能播放控制：</strong>支持单曲播放、循环播放、随机播放等多种模式</li>
+                        <li><strong>多设备兼容：</strong>完美适配桌面和移动设备</li>
+                        <li><strong>音量独立控制：</strong>每个音频卡片都有独立的音量调节功能</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>使用指南</h2>
+                
+                <h3>基本操作</h3>
+                <ol>
+                    <li><strong>播放/暂停：</strong>点击音频卡片上的播放按钮开始播放，再次点击暂停</li>
+                    <li><strong>音量调节：</strong>使用每个音频卡片下方的滑块调节音量</li>
+                    <li><strong>进度查看：</strong>每个音频的播放进度和总时长显示在进度条右侧</li>
+                </ol>
+                
+                <h3>全局控制功能</h3>
+                <ul>
+                    <li><strong>播放全部：</strong>同时播放所有音频（谨慎使用，可能造成声音混杂）</li>
+                    <li><strong>停止全部：</strong>停止所有正在播放的音频并重置进度</li>
+                    <li><strong>随机播放：</strong>随机选择一个音频开始播放</li>
+                    <li><strong>循环播放：</strong>开启后当前播放的音频将在结束后自动重播</li>
+                </ul>
+                
+                <h3>当前播放指示器</h3>
+                <p>页面底部会显示当前正在播放的音频信息，您可以直接在这里控制播放/暂停，查看播放进度。</p>
+            </div>
+            
+            <div class="section">
+                <h2>免责声明</h2>
+                
+                <div class="warning">
+                    <p><strong>重要声明：</strong>请仔细阅读以下免责声明，使用本产品即表示您同意以下条款。</p>
+                </div>
+                
+                <h3>1. 使用目的声明</h3>
+                <p>本白噪音播放器（123MUSIC）仅供个人学习、研究、娱乐和放松使用，不作为任何医疗、治疗或商业用途。本产品不能替代专业的医疗建议或治疗。</p>
+                
+                <h3>2. 音频资源说明</h3>
+                <p>本产品中使用的音频资源均从公开渠道获取，仅供个人非商业使用。如果您是音频内容的版权所有者，并认为您的权益受到侵害，请通过适当渠道联系我们，我们将及时处理。</p>
+                
+                <h3>3. 使用风险提示</h3>
+                <ul>
+                    <li>使用耳机时请注意音量调节，避免长时间高音量使用导致听力损伤</li>
+                    <li>驾驶、操作机械或需要高度集中注意力的场合请勿使用本产品</li>
+                    <li>本产品中的音效可能会影响他人，请在使用时考虑周围环境</li>
+                    <li>如果您有耳鸣、听力敏感或其他听觉问题，请谨慎使用</li>
+                </ul>
+                
+                <h3>4. 责任限制</h3>
+                <p>MangoClub及开发团队不对因使用本产品导致的任何直接、间接、附带或后果性损失承担责任，包括但不限于听力损伤、注意力分散导致的事故、设备损坏等。</p>
+                
+                <h3>5. 技术免责</h3>
+                <p>我们尽力确保产品的稳定性和可用性，但不保证产品无错误、不间断运行或完全符合用户期望。我们保留在不事先通知的情况下修改、暂停或终止服务的权利。</p>
+            </div>
+            
+            <div class="section">
+                <h2>技术支持与反馈</h2>
+                <p>如果您在使用过程中遇到问题或有改进建议，欢迎访问我们的官方网站获取更多信息或提交反馈。</p>
+                
+                <a href="http://123music.vvvv.ee" target="_blank" class="action-button">
+                    开始使用
+                </a>
+                
+                <p class="highlight">请注意：点击上方按钮将离开当前页面，访问外部网站。外部网站的内容和隐私政策不在本产品控制范围内，请谨慎访问。</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>©2022-2026 MangoClub - 本网站仅供学习使用，非其他用途</p>
+            <p>最后更新日期：2025年12月</p>
+            <p><a href="index.html">返回播放器主页面</a></p>
+        </div>
+    </div>
+</body>
+</html>
